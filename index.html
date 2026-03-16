@@ -274,6 +274,7 @@
       if (!document.getElementById('escovaCompativel').value) erros.push("Escova compatível");
       if (!document.getElementById('geradorCloro').value) erros.push("Cliente utiliza gerador de cloro?");
       if (!document.getElementById('ph').value.trim()) erros.push("PH");
+      if (!document.getElementById('cloro').value.trim()) erros.push("Cloro");
 
       // Validação Equipamentos
       const blocos = document.querySelectorAll('.equipamento-block');
