@@ -48,7 +48,7 @@
     .btn { padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold; width: 100%; transition: 0.2s; }
     .btn-add { background-color: #007bff; color: white; margin-bottom: 20px; }
     .btn-add:hover { background-color: #0056b3; }
-    .btn-gerar { background-color: #25D366; color: white; max-width: 800px; display: block; margin: 0 auto; }
+    .btn-gerar { background-color: #25D366; color: white; max-width: 800px; display: block; margin: 0 auto; font-size: 18px; padding: 15px; }
     .btn-gerar:hover { background-color: #1da851; }
     .btn-remover { background-color: #dc3545; color: white; width: auto; padding: 8px 15px; font-size: 14px; margin-top: 10px; float: right; }
 
@@ -65,9 +65,15 @@
 
   <div class="form-section">
     <h2>Dados Globais do Chamado</h2>
-    <div class="form-group">
-      <label for="cliente">Nome do cliente principal:</label>
-      <input type="text" id="cliente" placeholder="Digite o nome completo">
+    <div class="form-row">
+      <div class="form-group">
+        <label for="protocolo">Protocolo:</label>
+        <input type="text" id="protocolo" placeholder="Nº do Protocolo">
+      </div>
+      <div class="form-group" style="flex: 2;">
+        <label for="cliente">Nome do cliente principal:</label>
+        <input type="text" id="cliente" placeholder="Digite o nome completo">
+      </div>
     </div>
     
     <div class="form-row">
@@ -100,7 +106,7 @@
       <div class="form-group">
         <label for="tipoPiscina">Piscina do cliente:</label>
         <select id="tipoPiscina">
-          <option value="Não informado">-- Selecione --</option>
+          <option value="">-- Selecione --</option>
           <option value="Alvenaria">Alvenaria</option>
           <option value="Vinil">Vinil</option>
         </select>
@@ -108,7 +114,7 @@
       <div class="form-group">
         <label for="modeloEscova">Modelo da escova do cliente:</label>
         <select id="modeloEscova">
-          <option value="Não informado">-- Selecione --</option>
+          <option value="">-- Selecione --</option>
           <option value="Combinada Cinza">Combinada Cinza (Vinil)</option>
           <option value="Branca">Branca (Vinil e Alvenaria)</option>
         </select>
@@ -116,7 +122,7 @@
       <div class="form-group">
         <label for="escovaCompativel">Escova compatível com a piscina?</label>
         <select id="escovaCompativel">
-          <option value="Não informado">-- Selecione --</option>
+          <option value="">-- Selecione --</option>
           <option value="Sim">Sim</option>
           <option value="Não">Não</option>
         </select>
@@ -126,7 +132,7 @@
     <div class="form-group">
       <label for="geradorCloro">Cliente utiliza gerador de cloro?</label>
       <select id="geradorCloro">
-        <option value="Não informado">-- Selecione --</option>
+        <option value="">-- Selecione --</option>
         <option value="Sim">Sim</option>
         <option value="Não">Não</option>
       </select>
@@ -134,12 +140,12 @@
     <div class="form-row">
       <div class="form-group"><label>PH:</label><input type="text" id="ph" placeholder="Ex: 7.2"></div>
       <div class="form-group"><label>Cloro:</label><input type="text" id="cloro" placeholder="Ex: 1.5"></div>
-      <div class="form-group"><label>Alcalinidade:</label><input type="text" id="alcalinidade"></div>
-      <div class="form-group"><label>Acidez:</label><input type="text" id="acidez"></div>
+      <div class="form-group"><label>Alcalinidade (Opcional):</label><input type="text" id="alcalinidade"></div>
+      <div class="form-group"><label>Acidez (Opcional):</label><input type="text" id="acidez"></div>
     </div>
   </div>
 
-  <button class="btn btn-gerar" onclick="gerarRelatorioNovaAba()">Concluir e Gerar Relatório</button>
+  <button class="btn btn-gerar" onclick="processarEnvio()">Concluir e Gerar Relatório</button>
 
   <script>
     let equipCount = 0;
@@ -180,7 +186,6 @@
       div.className = 'equipamento-block';
       div.id = `bloco-equip-${id}`;
 
-      // Grade de robôs atualizada com as imagens da pasta do usuário
       div.innerHTML = `
         <div class="equip-counter">
           Equipamento ${id}
@@ -203,7 +208,7 @@
         <div class="form-row">
           <div class="form-group">
             <label>Foto do Equipamento Inteiro:</label>
-            <input type="file" accept="image/*" onchange="previewImagem(this, 'preview_fotoEq_${id}')">
+            <input type="file" id="file_fotoEq_${id}" accept="image/*" onchange="previewImagem(this, 'preview_fotoEq_${id}')">
             <img id="preview_fotoEq_${id}" class="img-preview" />
           </div>
         </div>
@@ -215,9 +220,13 @@
               <option value="Não">Não</option>
               <option value="Sim">Sim</option>
             </select>
-            <div id="divSerie_${id}" class="hidden" style="margin-top:10px;">
+            <div id="divSerie_${id}" class="hidden" style="margin-top:10px; background: #fff; padding: 10px; border: 1px dashed #ccc; border-radius: 8px;">
+              <p style="font-size: 13px; color: #555; margin-top: 0;">Veja um exemplo de onde localizar a etiqueta de série:</p>
+              
+              <img src="instrucao_serie.jpg" alt="Instrução Número de Série" style="width: 100%; max-width: 250px; border-radius: 6px; margin-bottom: 10px; display: block;">
+              
               <label>Anexar foto do Número de Série:</label>
-              <input type="file" accept="image/*" onchange="previewImagem(this, 'preview_serie_${id}')">
+              <input type="file" id="file_serie_${id}" accept="image/*" onchange="previewImagem(this, 'preview_serie_${id}')">
               <img id="preview_serie_${id}" class="img-preview" />
             </div>
           </div>
@@ -229,7 +238,7 @@
             </select>
             <div id="divNf_${id}" class="hidden" style="margin-top:10px;">
               <label>Anexar foto da NF:</label>
-              <input type="file" accept="image/*" onchange="previewImagem(this, 'preview_nf_${id}')">
+              <input type="file" id="file_nf_${id}" accept="image/*" onchange="previewImagem(this, 'preview_nf_${id}')">
               <img id="preview_nf_${id}" class="img-preview" />
             </div>
           </div>
@@ -237,7 +246,7 @@
 
         <div class="form-row">
           <div class="form-group"><label>Tempo de uso:</label><input type="text" id="tempoUso_${id}" placeholder="Ex: 6 meses"></div>
-          <div class="form-group"><label>Em garantia?</label><select id="garantia_${id}"><option value="Não informado">-- Selecione --</option><option value="Sim">Sim</option><option value="Não">Não</option></select></div>
+          <div class="form-group"><label>Em garantia?</label><select id="garantia_${id}"><option value="">-- Selecione --</option><option value="Sim">Sim</option><option value="Não">Não</option></select></div>
         </div>
 
         <div class="form-group"><label>Peças enviadas junto (Filtro, fonte, etc):</label><input type="text" id="pecasEnvio_${id}" placeholder="Especifique"></div>
@@ -253,25 +262,77 @@
     function removerEquipamento(id) { document.getElementById(`bloco-equip-${id}`).remove(); }
     window.onload = () => adicionarEquipamento();
 
+    // =============== VALIDAÇÃO DE CAMPOS OBRIGATÓRIOS ===============
+    function processarEnvio() {
+      const erros = [];
+
+      // Validação Geral
+      if (!document.getElementById('protocolo').value.trim()) erros.push("Protocolo");
+      if (!document.getElementById('cliente').value.trim()) erros.push("Nome do cliente principal");
+      if (!document.getElementById('tipoPiscina').value) erros.push("Piscina do cliente");
+      if (!document.getElementById('modeloEscova').value) erros.push("Modelo da escova");
+      if (!document.getElementById('escovaCompativel').value) erros.push("Escova compatível");
+      if (!document.getElementById('geradorCloro').value) erros.push("Cliente utiliza gerador de cloro?");
+      if (!document.getElementById('ph').value.trim()) erros.push("PH");
+
+      // Validação Equipamentos
+      const blocos = document.querySelectorAll('.equipamento-block');
+      blocos.forEach((bloco, index) => {
+        const id = bloco.id.split('-')[2];
+        const num = index + 1;
+
+        if (!document.getElementById(`file_fotoEq_${id}`).files.length) erros.push(`Foto do Equipamento ${num}`);
+        
+        if (document.getElementById(`temSerie_${id}`).value === 'Sim' && !document.getElementById(`file_serie_${id}`).files.length) {
+          erros.push(`Foto do Número de Série (Equipamento ${num})`);
+        }
+        if (document.getElementById(`temNF_${id}`).value === 'Sim' && !document.getElementById(`file_nf_${id}`).files.length) {
+          erros.push(`Foto da Nota Fiscal (Equipamento ${num})`);
+        }
+
+        if (!document.getElementById(`tempoUso_${id}`).value.trim()) erros.push(`Tempo de uso (Equipamento ${num})`);
+        if (!document.getElementById(`garantia_${id}`).value) erros.push(`Garantia (Equipamento ${num})`);
+        if (!document.getElementById(`pecasEnvio_${id}`).value.trim()) erros.push(`Peças enviadas (Equipamento ${num})`);
+        if (!document.getElementById(`problema_${id}`).value.trim()) erros.push(`Problema relatado (Equipamento ${num})`);
+      });
+
+      if (erros.length > 0) {
+        alert("Por favor, preencha os seguintes campos antes de gerar o relatório:\n\n- " + erros.join("\n- "));
+        return;
+      }
+
+      gerarRelatorioNovaAba();
+    }
+
     // =============== GERAÇÃO DO RELATÓRIO EM NOVA ABA ===============
     function gerarRelatorioNovaAba() {
-      // 1. Coleta os Dados Gerais
+      // Dicionário de Códigos
+      const codigosRobos = {
+        "RB2": "024037",
+        "RB4i": "026460",
+        "RB6": "024043",
+        "RB7": "027453",
+        "Liberty": "026440",
+        "Wave 100": "024055",
+        "Wave 2x2": "024053"
+      };
+
       const dadosBase = {
         dataAtual: new Date().toLocaleDateString('pt-BR'),
-        cliente: document.getElementById('cliente').value || 'Não preenchido',
+        protocolo: document.getElementById('protocolo').value,
+        cliente: document.getElementById('cliente').value,
         multiplosEquip: document.getElementById('multiplosEquip').value,
         mesmoCliente: document.getElementById('mesmoCliente').value,
-        tipoPiscina: document.getElementById('tipoPiscina').value || 'Não informado',
-        modeloEscova: document.getElementById('modeloEscova').value || 'Não informado',
-        escovaCompativel: document.getElementById('escovaCompativel').value || 'Não informado',
-        geradorCloro: document.getElementById('geradorCloro').value || 'Não informado',
-        ph: document.getElementById('ph').value || 'Não informado',
+        tipoPiscina: document.getElementById('tipoPiscina').value,
+        modeloEscova: document.getElementById('modeloEscova').value,
+        escovaCompativel: document.getElementById('escovaCompativel').value,
+        geradorCloro: document.getElementById('geradorCloro').value,
+        ph: document.getElementById('ph').value,
         cloro: document.getElementById('cloro').value || 'Não informado',
         alcalinidade: document.getElementById('alcalinidade').value || 'Não informado',
         acidez: document.getElementById('acidez').value || 'Não informado'
       };
 
-      // 2. Coleta os Dados dos Equipamentos Dinâmicos
       const equipamentosHTML = [];
       const blocos = document.querySelectorAll('.equipamento-block');
       
@@ -279,6 +340,7 @@
         const idOriginal = bloco.id.split('-')[2];
         const modeloMarcado = document.querySelector(`input[name="modelo_${idOriginal}"]:checked`);
         const modeloTexto = modeloMarcado ? modeloMarcado.value : 'Não informado';
+        const codRobo = codigosRobos[modeloTexto] || 'N/A';
 
         const fotoEqSrc = document.getElementById(`preview_fotoEq_${idOriginal}`).src;
         const serieSrc = document.getElementById(`preview_serie_${idOriginal}`).src;
@@ -287,19 +349,19 @@
         const htmlEquip = `
           <div class="equipamento-wrapper">
             <table class="pdf-table" style="border: 2px solid #002060; margin-bottom: 20px; page-break-inside: avoid;">
-              <tr style="background-color: #e9ecef;"><td colspan="2"><strong>EQUIPAMENTO ${index + 1} - Modelo: ${modeloTexto}</strong></td></tr>
+              <tr style="background-color: #e9ecef;"><td colspan="2"><strong>EQUIPAMENTO ${index + 1} - Modelo: ${modeloTexto} (Cód: ${codRobo})</strong></td></tr>
               <tr>
-                <td style="width: 50%;"><strong>Tempo de Uso:</strong> ${document.getElementById(`tempoUso_${idOriginal}`).value || 'Não preenchido'}</td>
+                <td style="width: 50%;"><strong>Tempo de Uso:</strong> ${document.getElementById(`tempoUso_${idOriginal}`).value}</td>
                 <td style="width: 50%;"><strong>Garantia:</strong> ${document.getElementById(`garantia_${idOriginal}`).value}</td>
               </tr>
               <tr>
                 <td><strong>Possui N. Série?</strong> ${document.getElementById(`temSerie_${idOriginal}`).value}</td>
                 <td><strong>Possui NF?</strong> ${document.getElementById(`temNF_${idOriginal}`).value}</td>
               </tr>
-              <tr><td colspan="2"><strong>Peças Enviadas:</strong> ${document.getElementById(`pecasEnvio_${idOriginal}`).value || 'Nenhuma/Não preenchido'}</td></tr>
+              <tr><td colspan="2"><strong>Peças Enviadas:</strong> ${document.getElementById(`pecasEnvio_${idOriginal}`).value}</td></tr>
               <tr>
                 <td colspan="2">
-                  <strong>Problema Relatado:</strong> ${document.getElementById(`problema_${idOriginal}`).value || 'Não preenchido'}<br>
+                  <strong>Problema Relatado:</strong> ${document.getElementById(`problema_${idOriginal}`).value}<br>
                   <strong>Cliente tem vídeo do problema?</strong> ${document.getElementById(`video_${idOriginal}`).value}
                 </td>
               </tr>
@@ -316,7 +378,6 @@
         equipamentosHTML.push(htmlEquip);
       });
 
-      // 3. Monta o HTML da Nova Aba
       const novaAba = window.open('', '_blank');
       novaAba.document.write(`
         <!DOCTYPE html>
@@ -325,7 +386,7 @@
           <title>Relatório - ${dadosBase.cliente}</title>
           <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"><\/script>
           <style>
-            body { font-family: Arial, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; }
+            body { font-family: Arial, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; padding-bottom: 100px; }
             .container { max-width: 800px; margin: 0 auto; background: #fff; padding: 40px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
             .pdf-header { width: 100%; border-collapse: collapse; margin-bottom: 20px; border: 2px solid #000; }
             .pdf-header td { border: 1px solid #000; padding: 5px; }
@@ -336,21 +397,16 @@
             .pdf-table td strong { color: #002060; }
             .pdf-img { max-width: 220px; max-height: 180px; object-fit: contain; border: 1px solid #ddd; border-radius: 4px; }
             
-            /* Barra de botões flutuante */
-            .action-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; padding: 15px; text-align: center; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); display: flex; justify-content: center; gap: 15px; }
-            .btn { padding: 12px 25px; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold; color: white; transition: 0.2s; }
+            /* BARRA DE BOTÕES REDESENHADA PARA FICAR MAIOR NO MOBILE */
+            .action-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; padding: 15px; text-align: center; box-shadow: 0 -2px 10px rgba(0,0,0,0.2); display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; z-index: 999; }
+            .btn { padding: 18px 20px; border: none; border-radius: 8px; cursor: pointer; font-size: 18px; font-weight: bold; color: white; flex: 1; min-width: 250px; max-width: 400px; transition: 0.2s; }
             .btn-print { background-color: #007bff; }
             .btn-print:hover { background-color: #0056b3; }
             .btn-share { background-color: #25D366; }
             .btn-share:hover { background-color: #1da851; }
 
-            /* AJUSTE PARA FORÇAR AS CORES DE FUNDO NA IMPRESSÃO */
             @media print {
-              * {
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
-                color-adjust: exact !important;
-              }
+              * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
               body { background: #fff; padding: 0; }
               .container { box-shadow: none; padding: 0; margin: 0; max-width: 100%; }
               .action-bar { display: none !important; }
@@ -370,7 +426,7 @@
                   <div class="pdf-titulo-empresa">SODRAMAR INDUSTRIA E COMERCIO LTDA</div>
                   <div style="padding: 10px; text-align: center;">
                     <strong>CHECKLIST DE ENTRADA DE EQUIPAMENTO</strong><br>
-                    Data: ${dadosBase.dataAtual}
+                    Data: ${dadosBase.dataAtual} &nbsp;|&nbsp; Protocolo: <strong>${dadosBase.protocolo}</strong>
                   </div>
                 </td>
               </tr>
