@@ -119,14 +119,6 @@
           <option value="Branca">Branca (Vinil e Alvenaria)</option>
         </select>
       </div>
-      <div class="form-group">
-        <label for="escovaCompativel">Escova compatível com a piscina?</label>
-        <select id="escovaCompativel">
-          <option value="">-- Selecione --</option>
-          <option value="Sim">Sim</option>
-          <option value="Não">Não</option>
-        </select>
-      </div>
     </div>
     
     <div class="form-group">
@@ -161,6 +153,18 @@
       const divAlvo = document.getElementById(idAlvo);
       if(selectElement.value === 'Sim') divAlvo.classList.remove('hidden');
       else divAlvo.classList.add('hidden');
+    }
+
+    // Função que mostra a Nota Fiscal APENAS se estiver na Garantia
+    function checarGarantia(selectElement, id) {
+      const blocoNF = document.getElementById(`blocoNF_container_${id}`);
+      if(selectElement.value === 'Sim') {
+        blocoNF.classList.remove('hidden');
+      } else {
+        blocoNF.classList.add('hidden');
+        document.getElementById(`temNF_${id}`).value = "Não";
+        document.getElementById(`divNf_${id}`).classList.add('hidden');
+      }
     }
 
     function previewImagem(inputElement, idPreview) {
@@ -214,6 +218,18 @@
         </div>
 
         <div class="form-row">
+          <div class="form-group"><label>Tempo de uso:</label><input type="text" id="tempoUso_${id}" placeholder="Ex: 6 meses"></div>
+          <div class="form-group">
+            <label>Em garantia?</label>
+            <select id="garantia_${id}" onchange="checarGarantia(this, ${id})">
+              <option value="">-- Selecione --</option>
+              <option value="Sim">Sim</option>
+              <option value="Não">Não</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
           <div class="form-group">
             <label>O equipamento tem Número de Série?</label>
             <select id="temSerie_${id}" onchange="checarCondicional(this, 'divSerie_${id}')">
@@ -230,7 +246,7 @@
               <img id="preview_serie_${id}" class="img-preview" />
             </div>
           </div>
-          <div class="form-group">
+          <div class="form-group hidden" id="blocoNF_container_${id}">
             <label>Possui Nota Fiscal?</label>
             <select id="temNF_${id}" onchange="checarCondicional(this, 'divNf_${id}')">
               <option value="Não">Não</option>
@@ -242,11 +258,6 @@
               <img id="preview_nf_${id}" class="img-preview" />
             </div>
           </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group"><label>Tempo de uso:</label><input type="text" id="tempoUso_${id}" placeholder="Ex: 6 meses"></div>
-          <div class="form-group"><label>Em garantia?</label><select id="garantia_${id}"><option value="">-- Selecione --</option><option value="Sim">Sim</option><option value="Não">Não</option></select></div>
         </div>
 
         <div class="form-group"><label>Peças enviadas junto (Filtro, fonte, etc):</label><input type="text" id="pecasEnvio_${id}" placeholder="Especifique"></div>
@@ -271,7 +282,6 @@
       if (!document.getElementById('cliente').value.trim()) erros.push("Nome do cliente principal");
       if (!document.getElementById('tipoPiscina').value) erros.push("Piscina do cliente");
       if (!document.getElementById('modeloEscova').value) erros.push("Modelo da escova");
-      if (!document.getElementById('escovaCompativel').value) erros.push("Escova compatível");
       if (!document.getElementById('geradorCloro').value) erros.push("Cliente utiliza gerador de cloro?");
       if (!document.getElementById('ph').value.trim()) erros.push("PH");
       if (!document.getElementById('cloro').value.trim()) erros.push("Cloro");
@@ -326,7 +336,6 @@
         mesmoCliente: document.getElementById('mesmoCliente').value,
         tipoPiscina: document.getElementById('tipoPiscina').value,
         modeloEscova: document.getElementById('modeloEscova').value,
-        escovaCompativel: document.getElementById('escovaCompativel').value,
         geradorCloro: document.getElementById('geradorCloro').value,
         ph: document.getElementById('ph').value,
         cloro: document.getElementById('cloro').value || 'Não informado',
@@ -347,17 +356,20 @@
         const serieSrc = document.getElementById(`preview_serie_${idOriginal}`).src;
         const nfSrc = document.getElementById(`preview_nf_${idOriginal}`).src;
 
+        const garantiaVal = document.getElementById(`garantia_${idOriginal}`).value;
+        const possuiNFTexto = garantiaVal === 'Sim' ? document.getElementById(`temNF_${idOriginal}`).value : 'Não se aplica';
+
         const htmlEquip = `
           <div class="equipamento-wrapper">
             <table class="pdf-table" style="border: 2px solid #002060; margin-bottom: 20px; page-break-inside: avoid;">
               <tr style="background-color: #e9ecef;"><td colspan="2"><strong>EQUIPAMENTO ${index + 1} - Modelo: ${modeloTexto} (Cód: ${codRobo})</strong></td></tr>
               <tr>
                 <td style="width: 50%;"><strong>Tempo de Uso:</strong> ${document.getElementById(`tempoUso_${idOriginal}`).value}</td>
-                <td style="width: 50%;"><strong>Garantia:</strong> ${document.getElementById(`garantia_${idOriginal}`).value}</td>
+                <td style="width: 50%;"><strong>Garantia:</strong> ${garantiaVal}</td>
               </tr>
               <tr>
                 <td><strong>Possui N. Série?</strong> ${document.getElementById(`temSerie_${idOriginal}`).value}</td>
-                <td><strong>Possui NF?</strong> ${document.getElementById(`temNF_${idOriginal}`).value}</td>
+                <td><strong>Possui NF?</strong> ${possuiNFTexto}</td>
               </tr>
               <tr><td colspan="2"><strong>Peças Enviadas:</strong> ${document.getElementById(`pecasEnvio_${idOriginal}`).value}</td></tr>
               <tr>
@@ -370,7 +382,7 @@
                 <td colspan="2" style="text-align: center; background-color: #fafafa;">
                   ${fotoEqSrc && fotoEqSrc.length > 50 ? `<div style="display:inline-block; margin: 10px; text-align:center;"><img src="${fotoEqSrc}" class="pdf-img"><br><small>Equipamento</small></div>` : ''}
                   ${serieSrc && serieSrc.length > 50 ? `<div style="display:inline-block; margin: 10px; text-align:center;"><img src="${serieSrc}" class="pdf-img"><br><small>Nº Série</small></div>` : ''}
-                  ${nfSrc && nfSrc.length > 50 ? `<div style="display:inline-block; margin: 10px; text-align:center;"><img src="${nfSrc}" class="pdf-img"><br><small>Nota Fiscal</small></div>` : ''}
+                  ${nfSrc && nfSrc.length > 50 && garantiaVal === 'Sim' ? `<div style="display:inline-block; margin: 10px; text-align:center;"><img src="${nfSrc}" class="pdf-img"><br><small>Nota Fiscal</small></div>` : ''}
                 </td>
               </tr>
             </table>
@@ -447,9 +459,8 @@
             <div class="pdf-secao-titulo">PARÂMETROS DA PISCINA E ESCOVA</div>
             <table class="pdf-table">
               <tr>
-                <td><strong>Piscina:</strong> <br>${dadosBase.tipoPiscina}</td>
-                <td><strong>Escova:</strong> <br>${dadosBase.modeloEscova}</td>
-                <td><strong>Compatível?</strong> <br>${dadosBase.escovaCompativel}</td>
+                <td style="width: 50%;"><strong>Piscina:</strong> <br>${dadosBase.tipoPiscina}</td>
+                <td style="width: 50%;"><strong>Escova:</strong> <br>${dadosBase.modeloEscova}</td>
               </tr>
             </table>
             <table class="pdf-table">
